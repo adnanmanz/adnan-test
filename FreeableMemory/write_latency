@@ -1,0 +1,77 @@
+---
+https://pdck-na2.pega.net/prweb?isolationhash=CaRO4Qh8KP1qqBGulkI_uvt--eXo6p7CEGBUxHEG9z58n_8Kl3762Q*&suffixlink=case/PEGA0005-5746/CaRO4Qh8KP1qqBGulkI_uvt--eXo6p7CEGBUxHEG9z58n_8Kl3762Q*
+
+DB Time
+(PEGA0005-5746)
+
+irst seen
+February 09, 2026
+Last seen approx.
+1 day ago
+
+SELECT "PC0"."pyid" AS "pyID", "PC0"."pysubject" AS "pySubject", "PC0"."pystatuswork" AS "pyStatusWork", "PC0"."requesttype" AS "RequestType", "PC0"."servicetype" AS "ServiceType", "PC0"."pyfrom" AS "pyFrom", "PC0"."pzinskey" AS "pzInsKey", "PC0"."pxcreatedatetime" AS "pxCreateDateTime", "PC0"."pxupdatedatetime" AS "pxUpdateDateTime", "PC0"."pxupdateopname" AS "pxUpdateOpName", "PC0"."channelaccount" AS "ChannelAccount", data.pr_read_from_stream('literal', "PC0".pzInsKey, "PC0".pzPVStream) AS "SkillsOrTeam", data.pr_read_from_stream('literal', "PC0".pzInsKey, "PC0".pzPVStream) AS "CreateType", "WL"."pxassignedoperatorid" AS "pxAssignedOperatorID", "WB"."pxassignedoperatorid" AS "pxAssignedOperatorID", (CASE WHEN "WL"."pxassignedoperatorid" IS NULL THEN "WB"."pxassignedoperatorid" ELSE "WL"."pxassignedoperatorid" END) AS "pyTextValue(1)", "PC0"."triageuser" AS "TriageUser" FROM data.pc_work_triage "PC0" LEFT OUTER JOIN data.pc_assign_worklist "WL" ON (("WL"."pxrefobjectkey" = "PC0"."pzinskey") AND (("PC0"."pxobjclass" IN (?, ?, ?, ?) AND ("PC0"."pxapplication" = ?))) AND (("WL"."pxobjclass" = ?))) LEFT OUTER JOIN data.pc_assign_workbasket "WB" ON (("WB"."pxrefobjectkey" = "PC0"."pzinskey") AND (("PC0"."pxobjclass" IN (?, ?, ?, ?) AND ("PC0"."pxapplication" = ?))) AND (("WB"."pxobjclass" IN (?, ?)))) WHERE ((UPPER("PC0"."pyid") LIKE ? OR UPPER("PC0"."pysubject") LIKE ? OR UPPER("PC0"."pyfrom") LIKE ? OR data.pr_read_from_stream('literal', "PC0".pzInsKey, "PC0".pzPVStream) = ?) AND ("PC0"."servicetype" = ? OR data.pr_read_from_stream('literal', "PC0".pzInsKey, "PC0".pzPVStream) = ?)) AND ((("PC0"."pxobjclass" IN (?, ?, ?, ?) AND ("PC0"."pxapplication" = ?))))
+
+
+witout index - eating 21% CPU
+=====
+
+SELECT
+    "PC0"."pyguid" AS "pyGUID",
+    "PC0"."processtypeid" AS "ProcessTypeID",
+    "PC0"."processid" AS "ProcessID",
+    "PC0"."workitemid" AS "WorkItemID",
+    "PC0"."workitemtypeid" AS "WorkItemTypeID",
+    "PC0"."servicetype" AS "ServiceType",
+    "PC0"."status" AS "Status",
+    "PC0"."channelaccount" AS "ChannelAccount",
+    "PC0"."wimchanneltype" AS "WIMChannelType",
+    "PC0"."pxcreatedatetime" AS "pxCreateDateTime",
+    "PC0"."wimcreatedate" AS "WIMCreateDate",
+    "PC0"."workitemopen" AS "WorkItemOpen"
+FROM
+    customerdata.pr_analytics_data_channe_3c4f6 "PC0"
+WHERE ("PC0"."processtypeid" = $1
+    AND "PC0"."workitemtypeid" = $2
+    AND "PC0"."status" = $3
+    AND "PC0"."wimcreatedate" >= $4
+    AND "PC0"."workitemopen" = $5)
+ORDER BY
+    1 ASC,
+    10 ASC
+
+-- i see there is not that much insert running agains the table 
+
+
+Storage type
+General Purpose SSD (gp3)
+Storage
+216 GiB
+Provisioned IOPS
+3000 IOPS
+
+Instance class
+db.m6g.large
+
+
+SELECT
+    "PC0"."pyid" AS "pyID",
+    "PC0"."pzinskey" AS "pzInsKey",
+    "PC0"."pxobjclass" AS "pxObjClass",
+    "PC0"."pxcreatedatetime" AS "pxCreateDateTime",
+    "PC0"."pxupdatedatetime" AS "pxUpdateDateTime",
+    "PC0"."pystatuswork" AS "pyStatusWork",
+    "PC0"."priority" AS "Priority",
+    "PC0"."skillsorteam" AS "SkillsOrTeam",
+    "PC0"."requesttype" AS "RequestType",
+    "PC0"."duplicatecheckkey1" AS "DuplicateCheckKey1",
+    "PC0"."duplicatecheckkey2" AS "DuplicateCheckKey2",
+    "PC0"."serviceduplicatecheckkey1" AS "ServiceDuplicateCheckKey1",
+    "PC0"."resolveoptiondropdown" AS "ResolveOptionDropdown"
+FROM
+    data.pc_SA_ClientServices_Work "PC0"
+WHERE ("PC0"."intencaseid" = $1)
+    AND ((("PC0"."pxobjclass" IN ($2, $3)
+                AND ("PC0"."pxapplication" = $4
+                    OR "PC0"."pxapplication" = $5))))
+ORDER BY
+    4 ASC

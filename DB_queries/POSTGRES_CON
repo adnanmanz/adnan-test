@@ -1,0 +1,58 @@
+
+
+/opt/homebrew/opt/postgresql@14/bin/pg_ctl -D /opt/homebrew/var/postgresql@14 restart
+
+/opt/homebrew/opt/postgresql@14/bin/psql -h localhost -p 5432 -d postgres
+
+
+manza1@L29914MIN sql % brew install --cask docker
+
+
+
+CREATE TABLE big_table AS
+SELECT generate_series(1,50000000) AS id;
+
+
+
+ALTER TABLE big_table
+ADD COLUMN test_text TEXT DEFAULT md5(random()::text);
+``
+
+
+DO $$
+DECLARE
+batch_size INTEGER := 100000;
+total_deleted INTEGER := 0;
+rows_deleted INTEGER;
+BEGIN
+LOOP
+DELETE FROM pegadata.pc_history_fecredit_base_loan_ where pzinskey in (select pzinskey from pegadata.pc_history_fecredit_base_loan_ WHERE pxhistoryforreference like 'FECREDIT-BASE-LOAN-WORK-LOAN-IH UIH-%' and pxobjclass = 'History-FECredit-Base-Loan-Work-Loan-IH' LIMIT batch_size );
+GET DIAGNOSTICS rows_deleted = ROW_COUNT;
+total_deleted := total_deleted + rows_deleted;
+RAISE NOTICE 'Rows deleted: %', rows_deleted;
+IF rows_deleted = 0 THEN
+EXIT;
+END IF;
+COMMIT;
+END LOOP;
+RAISE NOTICE 'Total records deleted: %', total_deleted;
+
+
+
+  RAISE NOTICE 'Total records deleted: %', total_deleted;
+END
+$$ LANGUAGE plpgsql;
+
+      to_char(clock_timestamp(), 'YYYY-MM-DD HH24:MI:SS.MS'),
+      rows_deleted,
+      total_deleted;
+
+    -- Exit loop when no more rows match
+    IF rows_deleted = 0 THEN
+      EXIT;
+    END IF;
+  END LOOP;  --
+
+  RAISE NOTICE 'Total records deleted: %', total_deleted;
+END
+$$ LANGUAGE plpgsql;

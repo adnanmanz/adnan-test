@@ -1,0 +1,34 @@
+#!/bin/bash
+
+SQL_FILE="/home/Wintermute/testing/myquery.sql"
+MAP_FILE="/home/Wintermute/testing/map.txt"
+LOG_FILE="/home/Wintermute/testing/run_multi_env_$(date +%Y%m%d_%H%M%S).log"
+
+echo "Starting run at $(date)" | tee -a "$LOG_FILE"
+
+while IFS=',' read -r NAMESPACE CLUSTER
+do
+  [ -z "$NAMESPACE" ] && continue
+  [ -z "$CLUSTER" ] && continue
+
+  echo "Running NAMESPACE=$NAMESPACE CLUSTER=$CLUSTER" | tee -a "$LOG_FILE"
+  /home/Wintermute/testing/connect.ksh -c "$CLUSTER" -n "$NAMESPACE" -f "$SQL_FILE" >> "$LOG_FILE" 2>&1
+
+  if [ $? -eq 0 ]; then
+    echo "SUCCESS: $NAMESPACE" | tee -a "$LOG_FILE"
+  else
+    echo "FAILED: $NAMESPACE" | tee -a "$LOG_FILE"
+  fi
+done < "$MAP_FILE"
+
+echo "Completed. Log: $LOG_FILE"
+
+gzip -f "$LOG_FILE"
+echo "Compressed log: ${LOG_FILE}.gz"
+EOF
+
+
+===
+
+-- extract tar file
+- tar -xzf filename.

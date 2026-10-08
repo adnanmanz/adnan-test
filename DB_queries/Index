@@ -1,0 +1,65 @@
+## valid index in database
+++++++++++++++++++++++++++++
+
+select schemaname,tablename,indexname from pg_indexes where indexname in (SELECT pg_class.relname FROM pg_class, pg_index WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid);
+
+## size of index
++++++++++++++++++
+## reindex
++++++++++++++++++++++
+reindex index concurrently pegadata.<indexname>; -- replace the index name bcx its always unique
+
+
+## size of all indexes in a table
+==================================
+
+select indexname, pg_size_pretty(pg_relation_size( indexname:: regclass)) as size from pg_indexes where tablename = 'pr_sys_app_hierarchy_flat' and schemaname='pegadata';
+
+
+SELECT
+    pg_size_pretty(pg_relation_size('pegadata.pr_operators')) AS "Data Size",
+    pg_size_pretty(pg_indexes_size('pegadata.pr_operators')) AS "Indexes Size",
+    pg_size_pretty(pg_total_relation_size('pegadata.pr_operators')) AS "Total Size";
+
+
+    SELECT pg_size_pretty(pg_relation_size('')) AS "Data Size", pg_size_pretty(pg_indexes_size('pr4_history_rule')) AS "Indexes Size", pg_size_pretty(pg_total_relation_size('pr4_history_rule')) AS "Total Size";
+
+
+##Check sequential vs index scans
+==============================
+
+SELECT relname, seq_scan, idx_scan FROM pg_stat_user_tables WHERE relname = 'pegaam_index_events';
+
+
+## Find unused or rarely used indexes
+========
+
+
+## Check if Postgres is using your indexes at all: - need to add schema as well
+========
+
+SELECT schemaname, relname, indexrelname, idx_scan, idx_tup_read, idx_tup_fetch FROM pg_stat_user_indexes WHERE schemaname = 'pegadata' AND relname = 'pr_bba_fw_signet2fw_data_reser' ORDER BY idx_scan DESC;
+
+
+## index bloat
+================
+SELECT
+  schemaname, relname, indexrelname,
+  pg_size_pretty(pg_relation_size(indexrelid)) AS idx_size
+FROM pg_stat_user_indexes
+WHERE relname = 'product_application_account'
+ORDER BY pg_relation_size(indexrelid) DESC;
+
+
+## auto_vaccum coount
+=============
+SELECT relname,n_live_tup,n_dead_tup,last_autovacuum,vacuum_count,autovacuum_count FROM pg_stat_user_tables WHERE relname = 'product_application_account';
+
+
+SELECT pxobjclass, COUNT(*) AS count, ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS percentage
+FROM data. GROUP BY pxobjclass ORDER BY count DESC;
+
+
+
+
+SELECT COUNT("PC0"."pzinskey") AS "pySummaryCount(1)" FROM data.associatedtasks "PC0" WHERE ( ( ( "PC0"."reqcaseid" = $1 AND "PC0"."reqcaseid" IS NOT NULL ) OR ( "PC0"."associatedtaskid" IS NULL AND "PC0"."associatedtaskid" IS NOT NULL ) ) AND "PC0"."pxobjclass" = $2 )

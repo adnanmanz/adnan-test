@@ -1,0 +1,22 @@
+engie-dmpr1-prod
+
+================
+SELECT "PC0"."mail_id" AS "Mail_id" , "PC0"."thread_id" AS "Thread_id" , "PC0"."date_creation_interaction" AS "Date_creation_interaction" , "PC0"."date_last_thread" AS "Date_last_thread" , "PC0"."thread_last_event" AS "Thread_last_event" , "PC0"."thread_status" AS "Thread_status" , "PC0"."criteria_level1" AS "Criteria_level1" , "PC0"."reference_client" AS "Reference_client" , "PC0"."customer_name" AS "Customer_name" , "PC0"."requisition" AS "Requisition" , "PC0"."flow_type" AS "Flow_type" , "PC0"."mailbox_email" AS "Mailbox_email" , "PC0"."mailbox_name" AS "Mailbox_name" , "PC0"."interaction_subject" AS "Interaction_subject" , "PC0"."operator_login" AS "Operator_login" , "PC0"."identreprise" AS "Identreprise" , "PC0"."id_ged" AS "Id_ged" , "PC0"."mail_type" AS "Mail_type" , "PC0"."media" AS "Media" , "PC0"."desktop" AS "Desktop" , "PC0"."customer_email" AS "Customer_email" , "PC0"."criteria_level2" AS "Criteria_level2" , "PC0"."theme_demande" AS "Theme_demande" , "PC0"."type_demande" AS "Type_demande" , "PC0"."pxcommitdatetime" AS "pxCommitDateTime" , "PC0"."pxcreatedatetime" AS "pxCreateDateTime" , "PC0"."pxcreateoperator" AS "pxCreateOperator" , "PC0"."pxcreateopname" AS "pxCreateOpName" , "PC0"."pxcreatesystemid" AS "pxCreateSystemID" , "PC0"."pxsavedatetime" AS "pxSaveDateTime" , "PC0"."pxupdateoperator" AS "pxUpdateOperator" , "PC0"."pxupdateopname" AS "pxUpdateOpName" , "PC0"."pxupdatesystemid" AS "pxUpdateSystemID" , "PC0"."pxupdatedatetime" AS "pxUpdateDateTime" , "PC0"."filename" AS "FileName" FROM customerdata.pr_engie_fw_crmfw_data_archive "PC0" WHERE  ( "PC0"."identreprise" = $1  )  ORDER BY 1 ASC
+-- Create indexes to improve performance
+CREATE INDEX CONCURRENTLY ON pegadata.pc_assign_workbasket (pxrefobjectinsname, pxtasklabel);
+
+SELECT "pxtasklabel" AS "pxTaskLabel" ,   "pxrefobjectinsname" AS "pxRefObjectInsName" ,   "pzinskey" AS "pzInsKey",  "pzinskey" as "pxInsHandle"  from pegadata.pc_assign_workbasket  WHERE ( "pxtasklabel" LIKE $1 ) AND ( "pxrefobjectinsname" = $2 ) AND (  "pxobjclass" = $3  ) 
+--- Create indexes to improve performance   
+CREATE INDEX CONCURRENTLY ON customerdata.pr_engie_fw_crmfw_data_archive (identreprise.mail_id);
+
+SELECT "pxtasklabel" AS "pxTaskLabel" ,   "pxrefobjectinsname" AS "pxRefObjectInsName" ,   "pzinskey" AS "pzInsKey",  "pzinskey" as "pxInsHandle"  from pegadata.pc_assign_worklist  WHERE ( "pxtasklabel" LIKE $1 ) AND ( "pxrefobjectinsname" = $2 ) AND (  "pxobjclass" = $3  ) 
+--- Create indexes to improve performance
+CREATE INDEX CONCURRENTLY ON pegadata.pfw_cs_interaction (pycallid) INCLUDE (pzinskey, pxinsname) WHERE pycallid IS NULL;
+
+
+SELECT "PC0"."accountnumber" AS "AccountNumber" , "PC0"."label" AS "Label" , "PC0"."pyguid" AS "pyGUID" , "PC0"."subtypology" AS "Subtypology" , "PC0"."pzinskey" AS "pzInsKey" FROM pegadata.pr_Engie_Data_GenericAle_bb738 "PC0" WHERE  ( "PC0"."accountnumber" = $1  AND UPPER("PC0"."reference") = $2  AND  ( "PC0"."expirydate" > $3  OR "PC0"."expirydate" IS NULL )  AND  (  ( "PC0"."subtypology" IS NULL AND "PC0"."targettype" IN ($4 , $5 , $6 , $7 , $8 , $9 ) )  OR UPPER("PC0"."subtypology") <> $10  )  )  AND "PC0"."pxobjclass" = $11
+-- this one contains OR or like operation , will skip the ADD INDEX for now
+
+
+
+-- crteate INC first 

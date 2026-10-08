@@ -1,0 +1,119 @@
+WITH rr_inheritance_pc0 AS (
+SELECT
+r.pzInsKey,
+r.pyRuleAvailable,
+r.pyClassName,
+r.pyRuleSet,
+RANK() OVER (
+PARTITION BY r.pxInsId, r.pyClass, r.pyClassName
+ORDER BY i.pzRuleSetIndex, r.pyRuleSetVersion DESC
+) AS rank_idx,
+DENSE_RANK() OVER (
+ORDER BY r.pxInsId, r.pyClass, r.pyClassName
+) AS group_idx
+FROM pegarules2513.pr4_rule_vw r
+INNER JOIN (
+SELECT
+i.pzRuleSetName,
+i.pzRuleSetIndex,
+i.pzRuleSetVersionMajor,
+i.pzRuleSetVersionMinor,
+i.pzRuleSetVersionPatch,
+i.pzRuleSetVersionMinorPatch
+FROM pegarules2513.pr_sys_ruleset_index i
+WHERE i.pzRuleSetListHash =
+'885ce9a8eeee0fdac1e75eb61c71e2cf'
+ 
+UNION ALL
+ 
+SELECT
+'Pega-ProcessArchitect' AS pzRuleSetName,
+-1,
+1,
+1,
+1,
+'01-01'
+) i
+ON r.pyRuleSet = i.pzRuleSetName
+AND r.pzRuleSetVersionMajor = i.pzRuleSetVersionMajor
+AND r.pyRuleSetVersionMinorPatch <= i.pzRuleSetVersionMinorPatch
+WHERE r.pyClass =
+'Pega-Configuration-APIs7716b381937243a4b788e64e70c5a308'
+AND r.pyRuleAvailable != 'No'
+AND r.pyCircumstanceType IS NULL
+AND r.pyRuleStarts IS NULL
+AND r.pyRuleEnds IS NULL
+AND r.pzClassType = 0
+),
+ 
+rr_wo_inheritance_pc0 AS (
+SELECT
+r.pzInsKey,
+r.pyRuleAvailable,
+r.pyClassName,
+r.pyRuleSet,
+RANK() OVER (
+PARTITION BY r.pxInsId, r.pyClass
+ORDER BY i.pzRuleSetIndex, r.pyRuleSetVersion DESC
+) AS rank_idx,
+DENSE_RANK() OVER (
+ORDER BY r.pxInsId, r.pyClass
+) AS group_idx
+FROM pegarules2513.pr4_rule_vw r
+INNER JOIN (
+SELECT
+i.pzRuleSetName,
+i.pzRuleSetIndex,
+i.pzRuleSetVersionMajor,
+i.pzRuleSetVersionMinor,
+i.pzRuleSetVersionPatch,
+i.pzRuleSetVersionMinorPatch
+FROM pegarules2513.pr_sys_ruleset_index i
+WHERE i.pzRuleSetListHash =
+'885ce9a8eeee0fdac1e75eb61c71e2cf'
+ 
+UNION ALL
+ 
+SELECT
+'Pega-ProcessArchitect' AS pzRuleSetName,
+-1,
+1,
+1,
+1,
+'01-01'
+) i
+ON r.pyRuleSet = i.pzRuleSetName
+AND r.pzRuleSetVersionMajor = i.pzRuleSetVersionMajor
+AND r.pyRuleSetVersionMinorPatch <= i.pzRuleSetVersionMinorPatch
+WHERE r.pyClass =
+'Pega-Configuration-APIs7716b381937243a4b788e64e70c5a308'
+AND r.pyRuleAvailable != 'No'
+AND r.pyCircumstanceType IS NULL
+AND r.pyRuleStarts IS NULL
+AND r.pyRuleEnds IS NULL
+AND r.pzClassType = 1
+)
+ 
+SELECT
+PC0.pyClassName,
+PC0.pyLabel,
+PC0.pyPropertyName,
+PC0.pyStringType,
+PC0.pxUpdateDateTime,
+PC0.pyPropertyMode,
+PC0.pyStreamName,
+PC0.pyTableOption,
+PC0.pyRuleSet,
+PC0.pyMethodStatus,
+PC0.pzInsKey
+FROM pr4_rule_property PC0
+INNER JOIN resolved_rules_pc0 rr
+ON PC0.pzInsKey = rr.pzInsKey
+WHERE
+PC0.pyClassName =
+'Pega-Configuration-APIs7716b381937243a4b788e64e70c5a308'
+AND (
+PC0.pyMethodStatus <> 'Deprecated'
+OR PC0.pyMethodStatus IS NULL
+)
+AND PC0.pxObjClass = 'Rule-Obj-Property';

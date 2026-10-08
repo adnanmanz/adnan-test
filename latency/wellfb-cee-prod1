@@ -1,0 +1,30 @@
+wellfb-cee-prod1
+
+
+2026-08-17 22:00:00 UTC:10.0.16.197(49312):pega@pega:[26162]:STATEMENT:  WITH source as (SELECT $1::varchar "AccountNumber" , $2::varchar "BackgroundImage" , $3::varchar "czCSApplicationName" , $4::varchar "ID" , $5::varchar "Name" , $6::varchar "ObjClass" , $7::timestamp "pxCommitDateTime" , $8::timestamp "pxCreateDateTime" , $9::varchar "pxCreateOperator" , $10::varchar "pxCreateOpName" , $11::varchar "pxCreateSystemID" , $12::varchar "pxListSubscript" , $13::timestamp "pxSaveDateTime" , $14::timestamp "pxUpdateDateTime" , $15::varchar "pxUpdateOperator" , $16::varchar "pxUpdateOpName" , $17::varchar "pxUpdateSystemID" , $18::varchar "pyGUID" , $19::varchar "pyLabel" , $20::varchar "RMAEvents" , $21::varchar "URL" , $22::varchar "Utterance"), upsert AS (UPDATE customerdata.pr_smbc_si_data_rmafile t SET "accountnumber" = source."AccountNumber" , "backgroundimage" = source."BackgroundImage" , "czcsapplicationname" = source."czCSApplicationName" , "id" = source."ID" , "name" = source."Name" , "objclass" = source."ObjClass" , "pxcommitdatetime" = source."pxCommitDateTime" , "pxcreatedatetime" = source."pxCreateDateTime" , "pxcreateoperator" = source."pxCreateOperator" , "pxcreateopname" = source."pxCreateOpName" , "pxcreatesystemid" = source."pxCreateSystemID" , "pxlistsubscript" = source."pxListSubscript" , "pxsavedatetime" = source."pxSaveDateTime" , "pxupdatedatetime" = source."pxUpdateDateTime" , "pxupdateoperator" = source."pxUpdateOperator" , "pxupdateopname" = source."pxUpdateOpName" , "pxupdatesystemid" = source."pxUpdateSystemID" , "pyguid" = source."pyGUID" , "pylabel" = source."pyLabel" , "rmaevents" = source."RMAEvents" , "url" = source."URL" , "utterance" = source."Utterance" FROM source WHERE  RETURNING *) INSERT INTO customerdata.pr_smbc_si_data_rmafile ("accountnumber" , "backgroundimage" , "czcsapplicationname" , "id" , "name" , "objclass" , "pxcommitdatetime" , "pxcreatedatetime" , "pxcreateoperator" , "pxcreateopname" , "pxcreatesystemid" , "pxlistsubscript" , "pxsavedatetime" , "pxupdatedatetime" , "pxupdateoperator" , "pxupdateopname" , "pxupdatesystemid" , "pyguid" , "pylabel" , "rmaevents" , "url" , "utterance") SELECT source."AccountNumber" , source."BackgroundImage" , source."czCSApplicationName" , source."ID" , source."Name" , source."ObjClass" , source."pxCommitDateTime" , source."pxCreateDateTime" , source."pxCreateOperator" , source."pxCreateOpName" , source."pxCreateSystemID" , source."pxListSubscript" , source."pxSaveDateTime" , source."pxUpdateDateTime" , source."pxUpdateOperator" , source."pxUpdateOpName" , source."pxUpdateSystemID" , source."pyGUID" , source."pyLabel" , source."RMAEvents" , source."URL" , source."Utterance" FROM source WHERE NOT EXISTS (SELECT null FROM upsert)
+2026-08-17 22:00:00 UTC:10.0.16.197(49312):pega@pega:[26162]:ERROR:  syntax error at or near "RETURNING" at character 1663
+
+
+
+select now();
+
+
+DO $$
+DECLARE
+rows_deleted INTEGER;
+BEGIN
+LOOP
+DELETE FROM pegadata.pr_data_file_inc_d38728
+WHERE pzinskey IN (
+SELECT pzinskey FROM pegadata.pr_data_file_inc_d38728
+WHERE pxcreatedatetime < '2025-07-01 00:00:00.000'
+LIMIT 1000000
+);
+GET DIAGNOSTICS rows_deleted = ROW_COUNT;
+COMMIT;
+RAISE NOTICE 'Rows deleted: %', rows_deleted;
+IF rows_deleted = 0 THEN
+EXIT;
+END IF;
+END LOOP;
+END $$;

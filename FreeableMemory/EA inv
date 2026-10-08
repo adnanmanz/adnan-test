@@ -1,0 +1,61 @@
+import os
+import json
+import csv
+import boto3
+import psycopg2
+from urllib.parse import unquote_plus
+from io import StringIO
+
+s3 = boto3.client("s3") -- boto3.client('s3') → connects to S3
+secrets = boto3.client("secretsmanager")
+
+DB_SECRET_NAME = os.environ["DB_SECRET_NAME"]
+DB_HOST = os.environ["DB_HOST"]        # RDS Proxy endpoint recommended
+DB_NAME = os.environ["DB_NAME"]
+DB_PORT = int(os.environ.get("DB_PORT", "5432"))
+
+def get_db_credentials():
+    secret_value = secrets.get_secret_value(SecretId=DB_SECRET_NAME)
+    secret = json.loads(secret_value["SecretString"])
+    return secret["username"], secret["password"]
+
+def get_conn():
+    username, password = get_db_credentials()
+    return psycopg2.connect(
+        host=DB_HOST,
+        dbname=DB_NAME,
+        user=username,
+        password=password,
+        port=DB_PORT
+    )
+
+def lambda_handler(event, context):
+    for record in event["Records"]:
+        bucket = record["s3"]["bucket"]["name"]
+        key = unquote_plus(record["s3"]["object"]["key"])
+
+        obj = s3.get_object(Bucket=bucket, Key=key)
+        content = obj["Body"].read().decode("utf-8")
+
+        reader = csv.DictReader(StringIO(content))
+
+        conn = get_conn()
+        try:
+            with conn:
+                with conn.cursor() as cur:
+                    for row in reader:
+                        cur.execute("""
+                            INSERT INTO public.my_table (id, name, amount)
+                            VALUES (%s, %s, %s)
+                        """, (
+                            row["id"],
+                            row["name"],
+                            row["amount"]
+                        ))
+        finally:
+            conn.close()
+
+    return {
+        "statusCode": 200,
+        "body": "File processed successfully"
+    }

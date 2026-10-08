@@ -1,0 +1,207 @@
+#!/bin/bash
+#
+#
+#
+show_help() {
+    echo "Usage: connect.ksh -c cluster_name -n namespace [-f file_name] [-m file_name] [-d file_name]  [-h]"
+    echo "Example: connect.ksh -c cluster-f7lmhiarsn18vnxki5pazabc -n asb-waka-prod1-mirror -f /home/Wintermute/a.sql"
+    echo "Options:"
+    echo "  -h  Show help message."
+    echo "  -c  Specify Cluster."
+    echo "  -n  Specify Namespace"
+    echo "  -f  SQL script name with full path that will be executed instead of interactive shell login. Script should be located on wintermute server and not in POD"
+    echo "      If -f or -m or -d options is omitted, then interactive session of psql on DB tools pod is launched"
+    echo "  -m  copy file to db pod "
+    echo "  -d  download file from db pod "
+}
+
+login_to_pod() {
+    kubectl exec $pod -c pega-web-tomcat -n $NAMESPACE  -it -- /bin/bash
+    audit_end_log
+    exit 0
+}
+exec_command() {
+    output=`kubectl exec $pod -c pega-web-tomcat -n $NAMESPACE --  $EXEC`
+    echo "$output,$CLUSTER,$NAMESPACE"
+    audit_end_log
+    exit 0
+}
+
+execute_command() {
+
+    if [[ "$FILE" == /* &amp;&amp; -f "$FILE" ]]; then
+        command_string=`cat $FILE`
+        command=`echo "$command_string"`
+        kubectl exec $pod -c pega-web-tomcat -n $NAMESPACE  -i -- ./psql --echo-all &lt;<!--
+       `echo "$command"`
+!
+        audit_end_log
+        exit 0
+    else
+            echo "File $FILE doesn't exist or absolute path is not provided"
+            audit_end_log
+            exit 1
+    fi
+}
+move_file() {
+        if [[ "$MOVE" == /* && -f "$MOVE" ]]; then
+                file_name=$(basename "$MOVE")
+                echo "kubectl cp $MOVE $pod:$file_name -c pega-web-tomcat -n $NAMESPACE"
+                kubectl cp $MOVE $pod:$file_name -c pega-web-tomcat -n $NAMESPACE
+                audit_end_log
+                exit 1
+        else
+                echo "File $MOVE can't be copied. Check path and file name. File path shoule be absolute file path"
+                audit_end_log
+                exit 1
+        fi
+}
+download_file() {
+
+        file_name=$(basename "$DOWNLOAD")
+
+        DEST_DIR="/home/Wintermute/adnan"
+
+        mkdir -p "$DEST_DIR"
+
+        echo "Downloading file..."
+        echo "Source      : $pod:$DOWNLOAD"
+        echo "Destination : $DEST_DIR/$file_name"
+
+        kubectl cp \
+        "$pod:$DOWNLOAD" \
+        "$DEST_DIR/$file_name" \
+        -c pega-web-tomcat \
+        -n "$NAMESPACE"
+
+        RC=$?
+
+        if [ $RC -eq 0 ]; then
+                echo ""
+                echo "SUCCESS"
+                echo "File saved to:"
+                echo "$DEST_DIR/$file_name"
+        else
+                echo ""
+                echo "FAILED"
+                audit_end_log
+                exit 1
+        fi
+
+        audit_end_log
+        exit 0
+}
+}
+audit_start_log() {
+        echo "START: `who am i`" -->&gt; /home/Wintermute/AUDIT/.log
+        echo "$CLUSTER $NAMESPACE $FILE" &gt;&gt; /home/Wintermute/AUDIT/.log
+}
+audit_end_log() {
+        echo "END: `who am i`" &gt;&gt; /home/Wintermute/AUDIT/.log
+}
+# Initialize variables for options
+#CLUSTER=""
+#NAMESPACE=""
+#FILE=""
+#MOVE=""
+
+# Parse options using getopts
+while getopts ":e:c:n:f:m:h:d:" opt; do
+  case ${opt} in
+    e )
+      EXEC=$OPTARG
+      ;;
+    c )
+      CLUSTER=$OPTARG
+      ;;
+    n )
+      NAMESPACE=$OPTARG
+      ;;
+    f )
+      FILE=$OPTARG
+      ;;
+    m )
+      MOVE=$OPTARG
+      ;;
+    d )
+      DOWNLOAD=$OPTARG
+      ;;
+    h )
+      show_help
+      exit 0
+      ;;
+    \? )
+      echo "Invalid option: -$OPTARG" &gt;&amp;2
+      ;;
+    : )
+      echo "Option -$OPTARG requires an argument." &gt;&amp;2
+      ;;
+  esac
+done
+
+# Shift off the options and their arguments
+shift $((OPTIND -1))
+
+audit_start_log
+# Display if mandatory arguments are missing
+if [ -z "$CLUSTER" ] || [ -z "$NAMESPACE" ]; then
+        echo "check for cluster name and namespace"
+        show_help
+        audit_end_log
+        exit 1
+fi
+if [[ ! -z "$FILE" &amp;&amp;  ! -z "$MOVE" ]]; then
+        echo "check for -f and -m"
+        echo "-f and -m option are contradictory. provide either -f or -m"
+        show_help
+        audit_end_log
+        exit 1
+fi
+
+
+
+export CONFIG=/home/Wintermute/kubeconfig
+
+cd $CONFIG
+#pwd 
+#ls  -1rt *.yaml |grep *${CLUSTER}*
+#echo  $CLUSTER
+#config_file=`ls -1rt *"${CLUSTER}"* |head -1`
+config_file=$(ls -1t *"$CLUSTER"* 2&gt;/dev/null | head -n 1)
+#echo  $config_file
+
+if [ -z "$config_file" ]; then
+    echo "No configuration file found for cluster: $CLUSTER"
+    audit_end_log
+    exit
+else
+    export KUBECONFIG="$CONFIG/$config_file"
+    echo "Using kubeconfig file: $KUBECONFIG"
+fi
+
+export pod=`kubectl get pods -n $NAMESPACE|awk '{print $1}'|grep db-tools`
+if [ -z $pod ]; then
+        "DB POD not found for $CLUSTER and $NAMESPACE"
+        exit 1
+fi
+# No -f option, login to psql for interactive session.
+# Else execute SQL script $FILE
+if [ ! -z "$FILE" ]; then
+                execute_command
+                exit 1
+elif [ ! -z "$MOVE" ]; then
+      move_file
+            audit_end_log
+            exit 1
+elif [  -n "$DOWNLOAD" ]; then
+           download_file
+           audit_end_log
+           exit 1
+elif [ -n "$EXEC" ]; then
+     exec_command
+     audit_end_log
+else
+        login_to_pod
+              audit_end_log
+        exit 1
+fi  

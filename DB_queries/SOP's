@@ -1,0 +1,63 @@
+## Google connect
+https://knowledgehub.pega.com/CLINFOPS:How_to_connect_to_DB_in_cloudK_(GCP)
+
+## RDS backup
+    https://knowledgehub.pega.com/GOC:RDS_backup_and_restore
+
+
+## Copy_files_to_and_from_Kubernetes_Pod
+https://knowledgehub.pega.com/CLOUDOPS:CloudK_-_Copy_files_to_and_from_Kubernetes_Pod
+
+## unsupported feature
+https://knowledgehub.pega.com/DBOPS:Unsupported_database_features_in_PegaCloud
+
+## single connect
+https://knowledgehub.pega.com/NETSEC:VDI_AppStream_-_Accessing_SingleConnect
+
+
+DBOPS:Pega-platform--cache-clear--operating-procedure- - KnowledgeHub
+
+## loging in postgres
+
+https://betterstack.com/community/guides/logging/how-to-start-logging-with-postgresql/
+
+
+## Unsupported_database_features_in_PegaCloud
+==============================================
+
+https://knowledgehub.pega.com/DBOPS:Unsupported_database_features_in_PegaCloud
+
+## cutty hunk pg_repack
+https://knowledgehub.pega.com/DBOPS:How_to_run_PG_Repack_in_Cuttyhunk(PG_REPACK_1_4_7)
+
+
+ageents 
+=======
+
+https://knowledgehub.pega.com/DBOPS:CloudK-_Disable_and_enable_the_agents_and_Listeners
+
+db restore
+=========
+
+https://knowledgehub.pega.com/DBOPS:How-to-perform-a-database-backup-and-restore
+
+
+SOP to stop/start cluster
+==========================
+https://knowledgehub.pega.com/INFPLSV:Sop_to_stop_the_CloudK_Environment
+
+Restoring RDS from one env to another env in Cloudk
+===================================================
+
+https://knowledgehub.pega.com/GOC:Restoring_RDS_from_one_env_to_another_env_in_Cloudk
+
+
+feature owning
+-------
+
+https://knowledgehub.pega.com/INFPLAT:Engine-feature--pal-log-usage-pr_perf_stats-usagedaemon
+
+
+CloudK- Disable and enable the agents and Listeners
+
+https://knowledgehub.pega.com/DBOPS:CloudK-_Disable_and_enable_the_agents_and_Listeners

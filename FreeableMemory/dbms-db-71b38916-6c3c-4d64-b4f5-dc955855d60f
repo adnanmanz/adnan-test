@@ -1,0 +1,10 @@
+cuttyhunk : PC100 :  : :  : pega-rds : Low RDS Freeable Memory for db-m6g-xlarge instance class : dbms-db-71b38916-6c3c-4d64-b4f5-dc955855d60f :  : eu-central-1 : 234362049443
+========
+
+
+
+DELETE FROM pegadata.pr_data_token "PC0" WHERE ( "PC0"."pyguid" = $1 ) -- taking some CPU
+/Users/manza1/Library/CloudStorage/OneDrive-PegasystemsInc/Desktop/Screenshot 2026-02-05 at 3.59.26 PM.png
+
+
+NEXT action - Create CC to create index on pyguid column 
